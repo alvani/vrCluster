@@ -20,13 +20,12 @@ public class UVR : ModuleRules
 		get { return Path.GetFullPath(Path.Combine(ModulePath, "../../ThirdParty/")); }
 	}
 
-	public UVR(TargetInfo Target)
-	{
-
+	public UVR(ReadOnlyTargetRules Target)
+	{        
 		PublicIncludePaths.AddRange(
 			new string[] {
 				"UVR/Public",
-				"../../../../Source/Runtime/OpenGLDrv/Public",
+				"../../../../Source/Runtime/OpenGLDrv/Public"                
 				// ... add public include paths required here ...
 			}
 			);
@@ -95,7 +94,7 @@ public class UVR : ModuleRules
 		LoadVrpnLib(Target);
 	}
 
-	public bool LoadVrpnLib(TargetInfo Target)
+	public bool LoadVrpnLib(ReadOnlyTargetRules Target)
 	{
 		if ((Target.Platform == UnrealTargetPlatform.Win64) || (Target.Platform == UnrealTargetPlatform.Win32))
 		{

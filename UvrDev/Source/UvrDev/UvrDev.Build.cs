@@ -4,8 +4,10 @@ using UnrealBuildTool;
 
 public class UvrDev : ModuleRules
 {
-	public UvrDev(TargetInfo Target)
+	public UvrDev(ReadOnlyTargetRules Target) : base(Target)
 	{
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UVR"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

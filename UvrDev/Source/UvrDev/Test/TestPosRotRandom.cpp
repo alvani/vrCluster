@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "UvrDev.h"
 #include "TestPosRotRandom.h"
+#include "UvrDev.h"
 
 
 UTestPosRotRandom::UTestPosRotRandom()
