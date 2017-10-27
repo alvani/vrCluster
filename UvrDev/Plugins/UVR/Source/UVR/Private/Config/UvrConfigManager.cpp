@@ -148,7 +148,14 @@ bool UvrConfigManager::GetCamera(const FString& id, SUvrConfigCamera& camera) co
 	return GetItem(m_Cameras, id, camera, FString("GetCamera"));
 }
 
+bool UvrConfigManager::GetLocalCamera(SUvrConfigCamera& camera) const
+{
+	SUvrConfigClusterNode localNode;
+	if (GetLocalClusterNode(localNode))
+		return GetItem(m_Cameras, localNode.CameraId, camera, FString("GetLocalCamera"));
 
+	return false;
+}
 
 // Viewports
 int32 UvrConfigManager::GetViewportsAmount() const

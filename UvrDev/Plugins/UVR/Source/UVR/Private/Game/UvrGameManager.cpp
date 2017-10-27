@@ -336,6 +336,13 @@ bool UvrGameManager::CreateNodes()
 
 bool UvrGameManager::CreateCameras()
 {
+	bool useLocalCamera = false;
+	SUvrConfigCamera localCamera;
+	if (UvrPlugin::get().ConfigMgr->GetLocalCamera(localCamera))
+	{
+		useLocalCamera = true;
+	}
+
 	const TArray<SUvrConfigCamera> cams = UvrPlugin::get().ConfigMgr->GetCameras();
 	for (const auto& cam : cams)
 	{
@@ -351,7 +358,19 @@ bool UvrGameManager::CreateCameras()
 		m_nodes.Add(cam.Id, pCam);
 
 		if (m_pCamera == nullptr)
-			m_pCamera = pCam;
+		{
+			if (useLocalCamera)
+			{
+				if (cam.Id == localCamera.Id)
+				{
+					m_pCamera = pCam;
+				}
+			}
+			else
+			{
+				m_pCamera = pCam;
+			}			
+		}		
 	}
 
 	// At least one camera must be set up
@@ -359,7 +378,7 @@ bool UvrGameManager::CreateCameras()
 	{
 		UE_LOG(LogUvrGame, Warning, TEXT("No camera found"));
 		return false;
-	}
+	}		
 
 	return m_cameras.Num() > 0;
 }

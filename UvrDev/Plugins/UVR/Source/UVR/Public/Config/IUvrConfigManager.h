@@ -26,6 +26,7 @@ struct IUvrConfigManager
 	virtual TArray<SUvrConfigCamera> GetCameras() const = 0;
 	virtual bool GetCamera(int32 idx, SUvrConfigCamera& camera) const = 0;
 	virtual bool GetCamera(const FString& id, SUvrConfigCamera& camera) const = 0;
+	virtual bool GetLocalCamera(SUvrConfigCamera& camera) const = 0;
 
 	virtual int32 GetViewportsAmount() const = 0;
 	virtual TArray<SUvrConfigViewport> GetViewports() const = 0;

@@ -35,6 +35,7 @@ struct SUvrConfigClusterNode : public SUvrConfigBase
 	FString Addr;
 	FString ScreenId;
 	FString ViewportId;
+	FString CameraId;
 	bool    IsMaster = false;
 	int32   Port_CS = -1;
 	int32   Port_SS = -1;
