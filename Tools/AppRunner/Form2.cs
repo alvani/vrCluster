@@ -37,18 +37,23 @@ namespace AppRunner
 
         private void UpdateCommandLine()
         {
+            cmdTextBox.Text = BuildCommandLine("<node_id>");
+        }
+
+        private string BuildCommandLine(string nodeId)
+        {
             string cmd = "";
             if (exeListBox.SelectedIndex >= 0)
             {
                 cmd += exeListBox.Items[exeListBox.SelectedIndex].ToString();
             }
+            cmd += " uvr_node=" + nodeId;
             if (configListBox.SelectedIndex >= 0)
             {
                 cmd += " uvr_cfg=" + configListBox.Items[configListBox.SelectedIndex].ToString();
             }
-            cmd += " -opengl3 -uvr_cluster -nosplash -nowrite";
-
-            cmdTextBox.Text = cmd;
+            cmd += " -opengl3 -uvr_cluster -nosplash -nowrite uvr_camera=camera_dynamic";
+            return cmd;
         }
 
         private void SendDaemonCommand(string nodeAddress, string cmd)
@@ -174,7 +179,7 @@ namespace AppRunner
 
             foreach (var node in cfg.clusterNodes)
             {
-                string cmd = "start " + cmdTextBox.Text;
+                string cmd = "start " + BuildCommandLine(node.id);
                 LogInfo("Send command to :  " + node.addr);
                 Task.Factory.StartNew(() =>
                 {
