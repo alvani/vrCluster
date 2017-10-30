@@ -18,6 +18,15 @@ namespace AppRunner
     {
         const int nodeListenerPort = 9777;
 
+        public struct WindowConfig
+        {
+            public string nodeId;
+            public int left;
+            public int top;
+        }
+
+        Dictionary<string, WindowConfig> wcDict;
+
         public Form2()
         {
             InitializeComponent();
@@ -33,6 +42,14 @@ namespace AppRunner
             }
             configListBox.SelectedIndex = settings.configIndex;
             exeListBox.SelectedIndex = settings.exeIndex;
+            windowedCheckBox.Checked = settings.windowed;
+            resXCheckBox.Checked = settings.resX;
+            resXTextBox.Text = settings.resXVal;
+            resYCheckBox.Checked = settings.resY;
+            resYTextBox.Text = settings.resYVal;
+            wcUseCheckBox.Checked = settings.useWcDict;
+            wcDict = new Dictionary<string, WindowConfig>(settings.wcDict);
+            UpdateWindowConfigList();
         }
 
         private void UpdateCommandLine()
@@ -47,11 +64,32 @@ namespace AppRunner
             {
                 cmd += exeListBox.Items[exeListBox.SelectedIndex].ToString();
             }
-            cmd += " uvr_node=" + nodeId;
+            cmd += " uvr_node=" + nodeId;            
             if (configListBox.SelectedIndex >= 0)
             {
                 cmd += " uvr_cfg=" + configListBox.Items[configListBox.SelectedIndex].ToString();
             }
+            if (windowedCheckBox.Checked)
+            {
+                cmd += " -windowed";
+            }
+            if (resXCheckBox.Checked)
+            {
+                cmd += " -resX=" + resXTextBox.Text;
+            }
+            if (resYCheckBox.Checked)
+            {
+                cmd += " -resY=" + resYTextBox.Text;
+            }
+            if (wcUseCheckBox.Checked)
+            {
+                if (wcDict.ContainsKey(nodeId))
+                {
+                    WindowConfig wc = wcDict[nodeId];
+                    cmd += " WinX=" + wc.left.ToString() + " WinY=" + wc.top.ToString();
+                }
+            }
+
             cmd += " -opengl3 -uvr_cluster -nosplash -nowrite uvr_camera=camera_dynamic";
             return cmd;
         }
@@ -101,6 +139,16 @@ namespace AppRunner
             {                
                 LogInfo(info);
             }));
+        }
+
+        private void UpdateWindowConfigList()
+        {
+            wcListBox.Items.Clear();
+            foreach (var key in wcDict.Keys)
+            {
+                var val = wcDict[key].nodeId;
+                wcListBox.Items.Add(val);
+            }            
         }
 
         private void addConfig_Click(object sender, EventArgs e)
@@ -161,6 +209,13 @@ namespace AppRunner
             }
             settings.configIndex = configListBox.SelectedIndex;
             settings.exeIndex = exeListBox.SelectedIndex;
+            settings.windowed = windowedCheckBox.Checked;
+            settings.resX = resXCheckBox.Checked;
+            settings.resXVal = resXTextBox.Text;
+            settings.resY = resYCheckBox.Checked;
+            settings.resYVal = resYTextBox.Text;
+            settings.useWcDict = wcUseCheckBox.Checked;
+            settings.wcDict = new Dictionary<string, WindowConfig>(wcDict);
             settings.Save();
         }
 
@@ -198,6 +253,80 @@ namespace AppRunner
             if (tbConsole.Text != String.Empty)
             {
                 Clipboard.SetText(tbConsole.Text);
+            }
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void windowedCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateCommandLine();
+        }
+
+        private void resXCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateCommandLine();
+        }
+
+        private void resYCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateCommandLine();
+        }
+
+        private void winXCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateCommandLine();
+        }
+
+        private void winYCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateCommandLine();
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            if (wcNodeTextBox.Text.Length == 0)
+            {
+                return;
+            }
+            
+            WindowConfig wc = new WindowConfig();
+            wc.nodeId = wcNodeTextBox.Text;
+            try
+            {
+                wc.left = Convert.ToInt32(wcLeftTextBox.Text);
+                wc.top = Convert.ToInt32(wcTopTextBox.Text);
+            }
+            catch (Exception ex)
+            {
+
+            }
+            wcDict[wc.nodeId] = wc;
+            UpdateWindowConfigList();
+        }
+
+        private void wndCfgListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (wcListBox.SelectedIndex >= 0)
+            {
+                var selNodeId = wcListBox.Items[wcListBox.SelectedIndex].ToString();
+                var wc = wcDict[selNodeId];
+                wcNodeTextBox.Text = wc.nodeId;
+                wcLeftTextBox.Text = wc.left.ToString();
+                wcTopTextBox.Text = wc.top.ToString();
+            }            
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            if (wcListBox.SelectedIndex >= 0)
+            {
+                var selNodeId = wcListBox.Items[wcListBox.SelectedIndex].ToString();
+                wcDict.Remove(selNodeId);
+                UpdateWindowConfigList();
             }
         }
     }

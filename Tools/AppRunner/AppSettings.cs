@@ -37,5 +37,12 @@ namespace AppRunner
         public List<String> Exes = new List<string>();
         public int configIndex = -1;
         public int exeIndex = -1;
+        public bool windowed = false;
+        public bool resX = false;
+        public String resXVal = "";
+        public bool resY = false;
+        public String resYVal = "";
+        public bool useWcDict = false;
+        public Dictionary<string, Form2.WindowConfig> wcDict;
     }
 }
