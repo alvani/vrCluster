@@ -30,14 +30,14 @@ bool UvrRenderManager::Init()
 
 	UE_LOG(LogUvrRender, Log, TEXT("Instantiating stereo device..."));
 
-	auto pDev = CreateStereoDevice();
-	if (pDev)
-	{
-		// Store ptr for internal usage
-		m_pDevice = static_cast<IUvrStereoDevice*>(pDev);
-		// Set new device in the engine
-		GEngine->StereoRenderingDevice = TSharedPtr<IStereoRendering, ESPMode::ThreadSafe>(static_cast<IStereoRendering*>(pDev));
-	}
+	//auto pDev = CreateStereoDevice();
+	//if (pDev)
+	//{
+	//	// Store ptr for internal usage
+	//	m_pDevice = static_cast<IUvrStereoDevice*>(pDev);
+	//	// Set new device in the engine
+	//	GEngine->StereoRenderingDevice = TSharedPtr<IStereoRendering, ESPMode::ThreadSafe>(static_cast<IStereoRendering*>(pDev));
+	//}
 
 	return true;
 }
