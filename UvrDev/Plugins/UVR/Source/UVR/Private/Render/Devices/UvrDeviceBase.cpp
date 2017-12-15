@@ -129,7 +129,7 @@ FMatrix UvrDeviceBase::GetStereoProjectionMatrix(const enum EStereoscopicPass St
 	check(StereoPassType != EStereoscopicPass::eSSP_FULL);
 	
 	const float n = GNearClippingPlane;
-	const float f = 100000.f;
+	const float f = 10000000.f;
 
 	// Half-size
 	const float hw = m_projSize.X / 2.f;
