@@ -170,11 +170,16 @@ FMatrix UvrDeviceBase::GetStereoProjectionMatrix(const enum EStereoscopicPass St
 	const float me = 1.f;
 
 	// Normal LHS
-	const FMatrix pm = FMatrix(
+	/*const FMatrix pm = FMatrix(
 		FPlane(mx, 0, 0, 0),
 		FPlane(0, my, 0, 0),
 		FPlane(ma, mb, mc, me),
-		FPlane(0, 0, md, 0));
+		FPlane(0, 0, md, 0));*/	
+		const FMatrix pm = FMatrix(
+		FPlane(mx, 0, 0, 0),
+		FPlane(0, my, 0, 0),
+		FPlane(ma, mb, 1, me),
+		FPlane(0, 0, -n, 0));
 
 	// Invert Z-axis (UE4 uses Z-inverted LHS)
 	const FMatrix flipZ = FMatrix(
