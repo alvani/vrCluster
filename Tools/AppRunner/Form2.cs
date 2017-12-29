@@ -89,8 +89,17 @@ namespace AppRunner
                     cmd += " WinX=" + wc.left.ToString() + " WinY=" + wc.top.ToString();
                 }
             }
+            if (debugCheckBox.Checked)
+            {
+                cmd += " -uvr_dev_debug";
+            }
 
-            cmd += " -opengl3 -uvr_cluster -nosplash -nowrite uvr_camera=camera_dynamic";
+            if (oglCheckBox.Checked)
+            {
+                cmd += " -opengl3";
+            }
+
+            cmd += " -uvr_cluster -nosplash -nowrite uvr_camera=camera_dynamic";
             return cmd;
         }
 
@@ -328,6 +337,16 @@ namespace AppRunner
                 wcDict.Remove(selNodeId);
                 UpdateWindowConfigList();
             }
+        }
+
+        private void debugCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateCommandLine();
+        }
+
+        private void oglCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateCommandLine();
         }
     }
 }
