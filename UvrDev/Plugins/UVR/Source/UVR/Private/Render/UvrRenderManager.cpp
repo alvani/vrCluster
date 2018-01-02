@@ -79,6 +79,8 @@ UvrDeviceBase* UvrRenderManager::CreateStereoDevice()
 		UE_LOG(LogUvrRender, Warning, TEXT("UVR stereo devices for editor mode are not allowed at the moment"));
 		return nullptr;
 	}
+	
+	return new UvrDeviceMonoGeneric();
 
 	// The debug stereo device is based on RHI level only. Therefore it
 	// doesn't require any environment specialization

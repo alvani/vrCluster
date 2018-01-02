@@ -6,4 +6,5 @@
 #include "Render/Devices/QuadBufferStereo/UvrDeviceQuadBufferStereo.h"
 #include "Render/Devices/SideBySide/UvrDeviceSideBySide.h"
 #include "Render/Devices/TopBottom/UvrDeviceTopBottom.h"
+#include "Render/Devices/MonoGeneric/UvrDeviceMonoGeneric.h"
 
