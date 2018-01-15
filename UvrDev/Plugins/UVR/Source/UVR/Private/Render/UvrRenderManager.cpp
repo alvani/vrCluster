@@ -71,6 +71,8 @@ IUvrStereoDevice* UvrRenderManager::GetStereoDevice()
 //////////////////////////////////////////////////////////////////////////////////////////////
 UvrDeviceBase* UvrRenderManager::CreateStereoDevice()
 {
+	return nullptr;
+
 	UvrDeviceBase* pDevice = nullptr;
 
 	// No stereo in editor
