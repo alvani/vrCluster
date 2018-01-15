@@ -52,10 +52,13 @@ bool UUvrLocalPlayer::GetProjectionData(FViewport* Viewport, EStereoscopicPass S
 	if (UvrPlugin::get().GameMgr.IsValid())
 	{
 		auto Screen = UvrPlugin::get().GameMgr->GetActiveScreen();
-		ProjLoc = Screen->GetComponentLocation();
-		ProjRot = Screen->GetComponentRotation();
-		ProjSize = Screen->GetScreenSize();
-		UseUvr = true;
+		if (Screen)
+		{
+			ProjLoc = Screen->GetComponentLocation();
+			ProjRot = Screen->GetComponentRotation();
+			ProjSize = Screen->GetScreenSize();
+			UseUvr = true;
+		}		
 	}
 
 	// If the actor
