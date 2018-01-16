@@ -240,6 +240,10 @@ bool UvrGameManager::InitializeUvrActor()
 	check(pController);
 	
 	m_pRoot = StaticCast<AUvrRoot*>(pController->GetPawn());
+	if (!m_pRoot)
+	{
+		return false;
+	}
 	check(m_pRoot);
 
 	if (!(CreateCameras() && CreateScreens() && CreateNodes()))
