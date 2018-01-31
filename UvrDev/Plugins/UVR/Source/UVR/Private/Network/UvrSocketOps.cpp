@@ -2,6 +2,7 @@
 #include "UvrPrivatePCH.h"
 #include "UvrSocketOps.h"
 
+uint8 UvrSocketOps::m_strBuffer[UvrSocketOps::m_bufferSize];
 
 UvrSocketOps::UvrSocketOps(FSocket* pSock) :
 	m_pSocket(pSock)
@@ -120,19 +121,17 @@ bool UvrSocketOps::RecvChunk(int32 chunkSize, TArray<uint8>& chunkBuffer, const 
 }
 
 bool UvrSocketOps::RecvString(FString& result)
-{
-	const uint32 bufferSize = 0xFFFF;
-	uint32 strSize = bufferSize - 1;
-	static uint8 strBuffer[bufferSize];
+{	
+	uint32 strSize = m_bufferSize - 1;	
 
 	result = "";
 	int32 bytesRead;
 	do 
 	{
-		memset(strBuffer, 0, bufferSize);		
-		if (m_pSocket->Recv(strBuffer, strSize, bytesRead))
+		memset(m_strBuffer, 0, m_bufferSize);
+		if (m_pSocket->Recv(m_strBuffer, strSize, bytesRead))
 		{
-			char* carr = (char*)strBuffer;
+			char* carr = (char*)m_strBuffer;
 			result += ANSI_TO_TCHAR(carr);
 		}
 		// do while buffer can't hold incoming data
@@ -217,6 +216,53 @@ bool UvrSocketOps::SendMsg(const UvrMessage::Ptr& msg)
 	}
 
 	UE_LOG(LogUvrNetwork, Verbose, TEXT("%s - message sent"), *GetName());
+
+	return true;
+}
+
+bool UvrSocketOps::SendStringMsg(const UvrMessage::Ptr& msg)
+{
+	FScopeLock lock(&GetSyncObj());
+
+	UE_LOG(LogUvrNetwork, Verbose, TEXT("%s - sending message: %s"), *GetName(), *msg->ToString());
+
+	if (!IsOpen())
+	{
+		UE_LOG(LogUvrNetwork, Error, TEXT("%s not connected"), *GetName());
+		return false;
+	}	
+
+	FString str;
+	msg->GetArg("str", str);
+	if (str.Len() > 0)
+	{
+		int byteSent;
+		char* ansiArr = TCHAR_TO_ANSI(*str);
+		size_t len = strlen(ansiArr) + 1; // null terminated str
+		uint8* data = (uint8*)ansiArr;
+		size_t offset = 0;
+
+		do
+		{
+			int dataSize = len <= m_sendPacketSize ? len : m_sendPacketSize;
+			if (!m_pSocket->Send(data + offset, dataSize, byteSent))
+			{
+				UE_LOG(LogUvrNetwork, Error, TEXT("%s - couldn't send a message (length=%d)"), *GetName(), len);
+				return false;
+			}
+
+			// Check amount of sent bytes
+			if (byteSent <= 0 || dataSize > byteSent)
+			{
+				UE_LOG(LogUvrNetwork, Error, TEXT("%s - sent wrong amount of bytes: %d of %d left"), *GetName(), byteSent, dataSize);
+				return false;
+			}
+
+			len -= byteSent;
+			offset += byteSent;
+
+		} while (len > 0);
+	}
 
 	return true;
 }
