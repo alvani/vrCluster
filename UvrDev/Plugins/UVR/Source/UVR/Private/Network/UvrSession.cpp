@@ -5,10 +5,11 @@
 #include "UvrMessage.h"
 
 
-UvrSession::UvrSession(FSocket* pSock, IUvrSessionListener* pListener, const FString& name) :
+UvrSession::UvrSession(FSocket* pSock, IUvrSessionListener* pListener, const FString& name, bool host) :
 	UvrSocketOps(pSock),
 	m_pListener(pListener),
-	m_name(name)
+	m_name(name),
+	m_host(host)
 {
 	check(pSock);
 	check(pListener);
@@ -41,17 +42,29 @@ uint32 UvrSession::Run()
 
 	while (IsOpen())
 	{
-		auto req = RecvMsg();
-		if (req.IsValid())
+		if (!m_host)
 		{
-			auto resp = m_pListener->ProcessMessage(req);
-			if (resp.IsValid())
+			auto req = RecvMsg();
+			if (req.IsValid())
 			{
-				if (SendMsg(resp))
+				auto resp = m_pListener->ProcessMessage(req);
+				if (resp.IsValid())
 				{
-					// 'Transaction' has been completed successfully so we continue the processing
-					continue;
+					if (SendMsg(resp))
+					{
+						// 'Transaction' has been completed successfully so we continue the processing
+						continue;
+					}
 				}
+			}
+		}
+		else
+		{
+			auto req = RecvHostMsg();
+			if (req.IsValid())
+			{
+				auto resp = m_pListener->ProcessMessage(req);
+				continue;
 			}
 		}
 

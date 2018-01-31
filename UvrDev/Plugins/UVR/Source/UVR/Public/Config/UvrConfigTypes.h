@@ -39,6 +39,7 @@ struct SUvrConfigClusterNode : public SUvrConfigBase
 	bool    IsMaster = false;
 	int32   Port_CS = -1;
 	int32   Port_SS = -1;
+	int32   Port_HS = 41003;
 
 	virtual FString ToString() const override;
 	virtual bool    DeserializeFromString(const FString& line) override;

@@ -57,6 +57,24 @@ UvrMessage::Ptr UvrSocketOps::RecvMsg()
 	return msg;
 }
 
+UvrMessage::Ptr UvrSocketOps::RecvHostMsg()
+{
+	FScopeLock lock(&GetSyncObj());
+
+	if (!IsOpen())
+	{
+		UE_LOG(LogUvrNetwork, Error, TEXT("%s - not connected"), *GetName());
+		return nullptr;
+	}
+
+	FString str;
+	RecvString(str);
+
+	UvrMessage::Ptr msg(new UvrMessage("host", "", ""));
+	msg->SetArg("str", str);
+	return msg;
+}
+
 bool UvrSocketOps::RecvChunk(int32 chunkSize, TArray<uint8>& chunkBuffer, const FString& chunkName)
 {
 	int32 bytesReadAll = 0;
@@ -98,6 +116,27 @@ bool UvrSocketOps::RecvChunk(int32 chunkSize, TArray<uint8>& chunkBuffer, const 
 	chunkBuffer.SetNumUninitialized(bytesReadAll);
 
 	// Operation succeeded
+	return true;
+}
+
+bool UvrSocketOps::RecvString(FString& result)
+{
+	const uint32 bufferSize = 0xFFFF;
+	uint32 strSize = bufferSize - 1;
+	static uint8 strBuffer[bufferSize];
+
+	result = "";
+	int32 bytesRead;
+	do 
+	{
+		memset(strBuffer, 0, bufferSize);		
+		if (m_pSocket->Recv(strBuffer, strSize, bytesRead))
+		{
+			char* carr = (char*)strBuffer;
+			result += ANSI_TO_TCHAR(carr);
+		}
+		// do while buffer can't hold incoming data
+	} while (bytesRead == strSize);
 	return true;
 }
 

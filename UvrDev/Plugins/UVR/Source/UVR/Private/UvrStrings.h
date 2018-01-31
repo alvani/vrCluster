@@ -78,6 +78,7 @@ namespace UvrStrings
 				static constexpr auto Camera   = TEXT("camera");
 				static constexpr auto PortCS   = TEXT("port_cs");
 				static constexpr auto PortSS   = TEXT("port_ss");
+				static constexpr auto PortHS   = TEXT("port_hs");
 				static constexpr auto Master   = TEXT("master");
 				// + Id
 			}

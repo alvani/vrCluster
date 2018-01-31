@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 FString SUvrConfigClusterNode::ToString() const
 {
-	return FString::Printf(TEXT("[%s + %s=%s, %s=%s, %s=%s, %s=%s, %s=%s, %s=%d, %s=%d]"),
+	return FString::Printf(TEXT("[%s + %s=%s, %s=%s, %s=%s, %s=%s, %s=%s, %s=%d, %s=%d, %s=%d]"),
 		*SUvrConfigBase::ToString(),
 		UvrStrings::cfg::data::Id, *Id, 
 		UvrStrings::cfg::data::cluster::Addr, *Addr, 
@@ -17,7 +17,8 @@ FString SUvrConfigClusterNode::ToString() const
 		UvrStrings::cfg::data::cluster::Camera, *CameraId,
 		UvrStrings::cfg::data::cluster::Viewport, *ViewportId, 
 		UvrStrings::cfg::data::cluster::PortCS, Port_CS,
-		UvrStrings::cfg::data::cluster::PortSS, Port_SS);
+		UvrStrings::cfg::data::cluster::PortSS, Port_SS,
+		UvrStrings::cfg::data::cluster::PortHS, Port_HS);
 }
 
 bool SUvrConfigClusterNode::DeserializeFromString(const FString& line)
@@ -30,6 +31,7 @@ bool SUvrConfigClusterNode::DeserializeFromString(const FString& line)
 	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::Addr),     Addr);
 	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::PortCS),   Port_CS);
 	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::PortSS),   Port_SS);
+	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::PortHS),	  Port_HS);
 	return SUvrConfigBase::DeserializeFromString(line);
 }
 

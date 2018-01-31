@@ -14,6 +14,7 @@ public:
 public:
 	virtual bool SendMsg(const UvrMessage::Ptr& msg);
 	virtual UvrMessage::Ptr RecvMsg();
+	virtual UvrMessage::Ptr RecvHostMsg();
 
 	inline FSocket* GetSocket() const
 	{ return m_pSocket; }
@@ -31,6 +32,7 @@ protected:
 
 private:
 	bool RecvChunk(int32 chunkSize, TArray<uint8>& chunkBuffer, const FString& chunkName = FString("DataChunk"));
+	bool RecvString(FString& result);
 
 private:
 	struct UvrMessageHeader

@@ -60,8 +60,9 @@ bool UvrClusterNodeCtrlMaster::InitializeServers()
 	UE_LOG(LogUvrCluster, Log, TEXT("Servers: addr %s, port_cs %d, port_ss %d"), *masterCfg.Addr, masterCfg.Port_CS, masterCfg.Port_SS);
 	m_srvCS.Reset(new UvrClusterSyncService(masterCfg.Addr, masterCfg.Port_CS));
 	m_srvSS.Reset(new UvrSwapSyncService(masterCfg.Addr, masterCfg.Port_SS));
+	m_srvHS.Reset(new UvrHostSyncService(masterCfg.Addr, masterCfg.Port_HS));
 
-	return m_srvCS.IsValid() && m_srvSS.IsValid();
+	return m_srvCS.IsValid() && m_srvSS.IsValid() && m_srvHS.IsValid();
 }
 
 bool UvrClusterNodeCtrlMaster::StartServers()
@@ -91,8 +92,18 @@ bool UvrClusterNodeCtrlMaster::StartServers()
 		UE_LOG(LogUvrCluster, Error, TEXT("%s failed to start"), *m_srvSS->GetName());
 	}
 
+	// HS server start
+	if (m_srvHS->Start())
+	{
+		UE_LOG(LogUvrCluster, Log, TEXT("%s started"), *m_srvHS->GetName());
+	}
+	else
+	{
+		UE_LOG(LogUvrCluster, Error, TEXT("%s failed to start"), *m_srvHS->GetName());
+	}
+
 	// Start the servers
-	return m_srvCS->IsRunning() && m_srvSS->IsRunning();
+	return m_srvCS->IsRunning() && m_srvSS->IsRunning() && m_srvHS->IsRunning();
 }
 
 void UvrClusterNodeCtrlMaster::StopServers()
@@ -101,6 +112,7 @@ void UvrClusterNodeCtrlMaster::StopServers()
 
 	m_srvCS->Shutdown();
 	m_srvSS->Shutdown();
+	m_srvHS->Shutdown();
 }
 
 bool UvrClusterNodeCtrlMaster::InitializeClients()

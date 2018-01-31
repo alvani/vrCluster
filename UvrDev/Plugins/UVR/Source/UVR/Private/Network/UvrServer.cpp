@@ -79,7 +79,7 @@ bool UvrServer::ConnectionHandler(FSocket* pSock, const FIPv4Endpoint& ep)
 		pSock->SetReceiveBufferSize(newSize, setSize);
 		pSock->SetSendBufferSize(newSize, setSize);
 
-		m_sessions.Add(TUniquePtr<UvrSession>(new UvrSession(pSock, this, GetName() + FString("_session_") + ep.ToString())));
+		m_sessions.Add(TUniquePtr<UvrSession>(new UvrSession(pSock, this, GetName() + FString("_session_") + ep.ToString(), m_hostMode)));		
 		return true;
 	}
 

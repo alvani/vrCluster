@@ -11,7 +11,7 @@ class UvrSession :
 	protected UvrSocketOps
 {
 public:
-	UvrSession(FSocket* pSock, IUvrSessionListener* pListener, const FString& name = FString("UvrSession"));
+	UvrSession(FSocket* pSock, IUvrSessionListener* pListener, const FString& name = FString("UvrSession"), bool host = false);
 	~UvrSession();
 
 	virtual FString GetName() const override final
@@ -23,7 +23,10 @@ private:
 
 private:
 	const FString        m_name;
-	IUvrSessionListener* m_pListener = nullptr;
 	FRunnableThread*     m_pThread = nullptr;
+	bool				 m_host;
+
+protected:
+	IUvrSessionListener* m_pListener = nullptr;
 };
 

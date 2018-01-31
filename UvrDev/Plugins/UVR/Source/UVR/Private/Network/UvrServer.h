@@ -66,5 +66,7 @@ private:
 
 	// Active sessions
 	TArray<TUniquePtr<UvrSession>> m_sessions;
+protected:
+	bool m_hostMode = false;
 };
 
