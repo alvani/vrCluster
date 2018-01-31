@@ -45,6 +45,14 @@ UvrMessage::Ptr UvrHostSyncService::ProcessMessage(UvrMessage::Ptr msg)
 		FString str;
 		msg->GetArg("str", str);
 		UE_LOG(LogUvrNetwork, Log, TEXT("%s"), *str);
+
+		HostData hd;
+		hd.str = str;		
+		std::unique_lock<std::mutex> lock{ m_dataMutex };
+		m_HostDataArray.push_back(hd);
+		lock.unlock();
+
+		m_cv.notify_all();
 	}
 
 	// Being here means that we have no appropriate dispatch logic for this message
@@ -59,12 +67,12 @@ bool UvrHostSyncService::IsConnectionAllowed(FSocket* pSock, const FIPv4Endpoint
 
 void UvrHostSyncService::ProcessData(HostData hd)
 {
-
+		
 }
 
 void UvrHostSyncService::WaitForHost()
 {
-	std::unique_lock<std::mutex> lock(m_Mutex);
+	std::unique_lock<std::mutex> lock{ m_dataMutex };
 	size_t count = m_HostDataArray.size();
 	if (count > 0)
 	{

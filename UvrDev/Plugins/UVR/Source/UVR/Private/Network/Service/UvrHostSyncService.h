@@ -28,13 +28,16 @@ protected:
 private:
 	struct HostData {
 		int counter;
+		FString str;
 	};
 
 	void ProcessData(HostData hd);
+
+public:
 	void WaitForHost();
 
 private:
-	std::mutex m_Mutex;
+	std::mutex m_dataMutex;
 	std::mutex m_waitMutex;
 	std::vector<HostData> m_HostDataArray;
 	std::condition_variable m_cv;

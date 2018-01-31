@@ -62,6 +62,8 @@ bool UvrClusterNodeCtrlMaster::InitializeServers()
 	m_srvSS.Reset(new UvrSwapSyncService(masterCfg.Addr, masterCfg.Port_SS));
 	m_srvHS.Reset(new UvrHostSyncService(masterCfg.Addr, masterCfg.Port_HS));
 
+	m_syncHost = FParse::Param(FCommandLine::Get(), TEXT("sync_host"));
+
 	return m_srvCS.IsValid() && m_srvSS.IsValid() && m_srvHS.IsValid();
 }
 
@@ -143,5 +145,14 @@ void UvrClusterNodeCtrlMaster::StopClients()
 
 	// Master clients stop
 	// ...
+}
+
+void UvrClusterNodeCtrlMaster::WaitForFrameStart()
+{
+	if (m_syncHost)
+	{
+		m_srvHS->WaitForHost();
+	}	
+	UvrClusterNodeCtrlSlave::WaitForFrameStart();	
 }
 

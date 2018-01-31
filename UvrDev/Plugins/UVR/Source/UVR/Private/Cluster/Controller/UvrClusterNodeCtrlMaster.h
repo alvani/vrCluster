@@ -40,10 +40,15 @@ protected:
 	virtual bool StartClients()      override;
 	virtual void StopClients()       override;
 
+public:
+	virtual void WaitForFrameStart() override;
+
 private:
 	// Node servers
 	TUniquePtr<UvrClusterSyncService> m_srvCS;
 	TUniquePtr<UvrSwapSyncService>    m_srvSS;
 	TUniquePtr<UvrHostSyncService>    m_srvHS;
+
+	bool m_syncHost;
 };
 

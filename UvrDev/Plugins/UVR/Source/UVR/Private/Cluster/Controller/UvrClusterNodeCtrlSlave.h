@@ -24,7 +24,7 @@ public:
 	// IPUvrClusterSyncProtocol
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	virtual void WaitForGameStart()  override final;
-	virtual void WaitForFrameStart() override final;
+	virtual void WaitForFrameStart() override;
 	virtual void WaitForFrameEnd()   override final;
 	virtual void WaitForTickEnd()    override final;
 	virtual void GetDeltaTime(float& deltaTime) override final;
