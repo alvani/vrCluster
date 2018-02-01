@@ -60,11 +60,16 @@ bool UvrClusterNodeCtrlMaster::InitializeServers()
 	UE_LOG(LogUvrCluster, Log, TEXT("Servers: addr %s, port_cs %d, port_ss %d"), *masterCfg.Addr, masterCfg.Port_CS, masterCfg.Port_SS);
 	m_srvCS.Reset(new UvrClusterSyncService(masterCfg.Addr, masterCfg.Port_CS));
 	m_srvSS.Reset(new UvrSwapSyncService(masterCfg.Addr, masterCfg.Port_SS));
-	m_srvHS.Reset(new UvrHostSyncService(masterCfg.Addr, masterCfg.Port_HS));
 
 	m_syncHost = FParse::Param(FCommandLine::Get(), TEXT("sync_host"));
+	bool hsValid = true;
+	if (m_syncHost)
+	{
+		m_srvHS.Reset(new UvrHostSyncService(masterCfg.Addr, masterCfg.Port_HS));
+		hsValid = m_srvHS.IsValid();
+	}
 
-	return m_srvCS.IsValid() && m_srvSS.IsValid() && m_srvHS.IsValid();
+	return m_srvCS.IsValid() && m_srvSS.IsValid() && hsValid;
 }
 
 bool UvrClusterNodeCtrlMaster::StartServers()
@@ -94,18 +99,24 @@ bool UvrClusterNodeCtrlMaster::StartServers()
 		UE_LOG(LogUvrCluster, Error, TEXT("%s failed to start"), *m_srvSS->GetName());
 	}
 
-	// HS server start
-	if (m_srvHS->Start())
+	bool hsRunning = true;
+	if (m_syncHost)
 	{
-		UE_LOG(LogUvrCluster, Log, TEXT("%s started"), *m_srvHS->GetName());
+		// HS server start
+		if (m_srvHS->Start())
+		{
+			UE_LOG(LogUvrCluster, Log, TEXT("%s started"), *m_srvHS->GetName());
+		}
+		else
+		{
+			UE_LOG(LogUvrCluster, Error, TEXT("%s failed to start"), *m_srvHS->GetName());
+		}
+		hsRunning = m_srvHS->IsRunning();
 	}
-	else
-	{
-		UE_LOG(LogUvrCluster, Error, TEXT("%s failed to start"), *m_srvHS->GetName());
-	}
+	
 
 	// Start the servers
-	return m_srvCS->IsRunning() && m_srvSS->IsRunning() && m_srvHS->IsRunning();
+	return m_srvCS->IsRunning() && m_srvSS->IsRunning() && hsRunning;
 }
 
 void UvrClusterNodeCtrlMaster::StopServers()
@@ -114,7 +125,11 @@ void UvrClusterNodeCtrlMaster::StopServers()
 
 	m_srvCS->Shutdown();
 	m_srvSS->Shutdown();
-	m_srvHS->Shutdown();
+
+	if (m_syncHost)
+	{
+		m_srvHS->Shutdown();
+	}
 }
 
 bool UvrClusterNodeCtrlMaster::InitializeClients()
@@ -122,9 +137,14 @@ bool UvrClusterNodeCtrlMaster::InitializeClients()
 	if (!UvrClusterNodeCtrlSlave::InitializeClients())
 		return false;	
 
-	m_clnHS.Reset(new UvrHostSyncClient());
+	bool hsValid = true;
+	if (m_syncHost)
+	{
+		m_clnHS.Reset(new UvrHostSyncClient());
+		hsValid = m_clnHS.IsValid();
+	}
 
-	return m_clnHS.IsValid();
+	return hsValid;
 }
 
 bool UvrClusterNodeCtrlMaster::StartClients()
@@ -132,26 +152,29 @@ bool UvrClusterNodeCtrlMaster::StartClients()
 	if (!UvrClusterNodeCtrlSlave::StartClients())
 		return false;
 
-	// Master config
-	SUvrConfigClusterNode masterCfg;
-	if (UvrPlugin::get().ConfigMgr->GetMasterClusterNode(masterCfg) == false)
+	if (m_syncHost)
 	{
-		UE_LOG(LogUvrCluster, Error, TEXT("No master node configuration data found"));
-		return false;
-	}
+		// Master config
+		SUvrConfigClusterNode masterCfg;
+		if (UvrPlugin::get().ConfigMgr->GetMasterClusterNode(masterCfg) == false)
+		{
+			UE_LOG(LogUvrCluster, Error, TEXT("No master node configuration data found"));
+			return false;
+		}
 
-	// HS client
-	if (m_clnHS->Connect(masterCfg.HostAddr, masterCfg.Port_Host))
-	{
-		UE_LOG(LogUvrCluster, Log, TEXT("%s connected to the server %s:%d"), *m_clnHS->GetName(), *masterCfg.Addr, masterCfg.Port_SS);
-	}
-	else
-	{
-		UE_LOG(LogUvrCluster, Error, TEXT("%s couldn't connect to the server %s:%d"), *m_clnHS->GetName(), *masterCfg.Addr, masterCfg.Port_SS);
-		return false;
-	}
+		// HS client
+		if (m_clnHS->Connect(masterCfg.HostAddr, masterCfg.Port_Host))
+		{
+			UE_LOG(LogUvrCluster, Log, TEXT("%s connected to the server %s:%d"), *m_clnHS->GetName(), *masterCfg.Addr, masterCfg.Port_SS);
+		}
+		else
+		{
+			UE_LOG(LogUvrCluster, Error, TEXT("%s couldn't connect to the server %s:%d"), *m_clnHS->GetName(), *masterCfg.Addr, masterCfg.Port_SS);
+			return false;
+		}
 
-	return m_clnHS->IsConnected();
+		return m_clnHS->IsConnected();
+	}
 
 	return true;
 }
@@ -160,15 +183,17 @@ void UvrClusterNodeCtrlMaster::StopClients()
 {
 	UvrClusterNodeCtrlSlave::StopClients();
 
-	m_clnHS->Disconnect();
+	if (m_syncHost)
+	{
+		m_clnHS->Disconnect();
+	}
 }
 
 void UvrClusterNodeCtrlMaster::WaitForFrameStart()
-{
-	m_clnHS->SendDataToHost();
-
+{	
 	if (m_syncHost)
 	{
+		m_clnHS->SendDataToHost();
 		m_srvHS->WaitForHost();
 	}	
 	UvrClusterNodeCtrlSlave::WaitForFrameStart();	
