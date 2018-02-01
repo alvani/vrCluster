@@ -73,12 +73,14 @@ namespace UvrStrings
 			{
 				static constexpr auto Header   = TEXT("[cluster_node]");
 				static constexpr auto Addr     = TEXT("addr");
+				static constexpr auto HostAddr = TEXT("host_addr");
 				static constexpr auto Screen   = TEXT("screen");
 				static constexpr auto Viewport = TEXT("viewport");
 				static constexpr auto Camera   = TEXT("camera");
 				static constexpr auto PortCS   = TEXT("port_cs");
 				static constexpr auto PortSS   = TEXT("port_ss");
 				static constexpr auto PortHS   = TEXT("port_hs");
+				static constexpr auto PortHost = TEXT("host_port");
 				static constexpr auto Master   = TEXT("master");
 				// + Id
 			}

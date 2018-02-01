@@ -8,17 +8,19 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 FString SUvrConfigClusterNode::ToString() const
 {
-	return FString::Printf(TEXT("[%s + %s=%s, %s=%s, %s=%s, %s=%s, %s=%s, %s=%d, %s=%d, %s=%d]"),
+	return FString::Printf(TEXT("[%s + %s=%s, %s=%s, %s=%s, %s=%s, %s=%s, %s=%s, %s=%s, %s=%d, %s=%d, %s=%d, %s=%d]"),
 		*SUvrConfigBase::ToString(),
 		UvrStrings::cfg::data::Id, *Id, 
 		UvrStrings::cfg::data::cluster::Addr, *Addr, 
+		UvrStrings::cfg::data::cluster::HostAddr, *HostAddr,
 		UvrStrings::cfg::data::cluster::Master, UvrHelpers::str::BoolToStr(IsMaster), 
 		UvrStrings::cfg::data::cluster::Screen, *ScreenId,
 		UvrStrings::cfg::data::cluster::Camera, *CameraId,
 		UvrStrings::cfg::data::cluster::Viewport, *ViewportId, 
 		UvrStrings::cfg::data::cluster::PortCS, Port_CS,
 		UvrStrings::cfg::data::cluster::PortSS, Port_SS,
-		UvrStrings::cfg::data::cluster::PortHS, Port_HS);
+		UvrStrings::cfg::data::cluster::PortHS, Port_HS,
+		UvrStrings::cfg::data::cluster::PortHost, Port_Host);
 }
 
 bool SUvrConfigClusterNode::DeserializeFromString(const FString& line)
@@ -29,9 +31,11 @@ bool SUvrConfigClusterNode::DeserializeFromString(const FString& line)
 	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::Camera),	  CameraId);
 	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::Master),   IsMaster);
 	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::Addr),     Addr);
+	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::HostAddr), HostAddr);
 	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::PortCS),   Port_CS);
 	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::PortSS),   Port_SS);
 	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::PortHS),	  Port_HS);
+	UvrHelpers::str::ExtractCommandLineValue(line, FString(UvrStrings::cfg::data::cluster::PortHost), Port_Host);
 	return SUvrConfigBase::DeserializeFromString(line);
 }
 

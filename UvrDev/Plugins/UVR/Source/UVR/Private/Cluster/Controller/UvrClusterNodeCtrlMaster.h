@@ -6,6 +6,7 @@
 #include "Network/Service/ClusterSync/UvrClusterSyncService.h"
 #include "Network/Service/SwapSync/UvrSwapSyncService.h"
 #include "Network/Service/UvrHostSyncService.h"
+#include "Network/Service/UvrHostSyncClient.h"
 
 
 class UvrClusterNodeCtrlMaster : public UvrClusterNodeCtrlSlave
@@ -48,6 +49,7 @@ private:
 	TUniquePtr<UvrClusterSyncService> m_srvCS;
 	TUniquePtr<UvrSwapSyncService>    m_srvSS;
 	TUniquePtr<UvrHostSyncService>    m_srvHS;
+	TUniquePtr<UvrHostSyncClient>     m_clnHS;
 
 	bool m_syncHost;
 };

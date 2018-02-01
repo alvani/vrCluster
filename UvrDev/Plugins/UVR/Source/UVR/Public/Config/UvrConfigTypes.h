@@ -33,13 +33,15 @@ struct SUvrConfigClusterNode : public SUvrConfigBase
 {
 	FString Id;
 	FString Addr;
+	FString HostAddr;
 	FString ScreenId;
 	FString ViewportId;
-	FString CameraId;
+	FString CameraId;	
 	bool    IsMaster = false;
 	int32   Port_CS = -1;
 	int32   Port_SS = -1;
 	int32   Port_HS = 41003;
+	int32   Port_Host = 2223;
 
 	virtual FString ToString() const override;
 	virtual bool    DeserializeFromString(const FString& line) override;

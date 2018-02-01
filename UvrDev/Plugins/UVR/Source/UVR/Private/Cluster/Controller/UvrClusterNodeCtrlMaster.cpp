@@ -120,12 +120,11 @@ void UvrClusterNodeCtrlMaster::StopServers()
 bool UvrClusterNodeCtrlMaster::InitializeClients()
 {
 	if (!UvrClusterNodeCtrlSlave::InitializeClients())
-		return false;
+		return false;	
 
-	// Master clients initialization
-	// ...
+	m_clnHS.Reset(new UvrHostSyncClient());
 
-	return true;
+	return m_clnHS.IsValid();
 }
 
 bool UvrClusterNodeCtrlMaster::StartClients()
@@ -133,8 +132,26 @@ bool UvrClusterNodeCtrlMaster::StartClients()
 	if (!UvrClusterNodeCtrlSlave::StartClients())
 		return false;
 
-	// Master clients start
-	// ...
+	// Master config
+	SUvrConfigClusterNode masterCfg;
+	if (UvrPlugin::get().ConfigMgr->GetMasterClusterNode(masterCfg) == false)
+	{
+		UE_LOG(LogUvrCluster, Error, TEXT("No master node configuration data found"));
+		return false;
+	}
+
+	// HS client
+	if (m_clnHS->Connect(masterCfg.HostAddr, masterCfg.Port_Host))
+	{
+		UE_LOG(LogUvrCluster, Log, TEXT("%s connected to the server %s:%d"), *m_clnHS->GetName(), *masterCfg.Addr, masterCfg.Port_SS);
+	}
+	else
+	{
+		UE_LOG(LogUvrCluster, Error, TEXT("%s couldn't connect to the server %s:%d"), *m_clnHS->GetName(), *masterCfg.Addr, masterCfg.Port_SS);
+		return false;
+	}
+
+	return m_clnHS->IsConnected();
 
 	return true;
 }
@@ -143,12 +160,13 @@ void UvrClusterNodeCtrlMaster::StopClients()
 {
 	UvrClusterNodeCtrlSlave::StopClients();
 
-	// Master clients stop
-	// ...
+	m_clnHS->Disconnect();
 }
 
 void UvrClusterNodeCtrlMaster::WaitForFrameStart()
 {
+	m_clnHS->SendDataToHost();
+
 	if (m_syncHost)
 	{
 		m_srvHS->WaitForHost();
