@@ -5,8 +5,8 @@
 #include "Network/UvrMessage.h"
 
 UvrHostSyncClient::UvrHostSyncClient() :
-	UvrClient(FString("CLN_HS"))
-{
+	UvrClient(FString("CLN_HS"), UvrClient::ST_UDP)
+{	
 }
 
 UvrHostSyncClient::UvrHostSyncClient(const FString& name) :
@@ -15,10 +15,8 @@ UvrHostSyncClient::UvrHostSyncClient(const FString& name) :
 }
 
 void UvrHostSyncClient::SendDataToHost()
-{
-	static TSharedPtr<UvrMessage> request(new UvrMessage("str", "", ""));
-	FString data = "empty";
-	request->SetArg("str", data);
-	SendStringMsg(request);
+{	
+	FString data = "empty";	
+	SendStringUDP(data);
 }
 

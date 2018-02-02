@@ -3,8 +3,9 @@
 #include "UvrClient.h"
 
 
-UvrClient::UvrClient(const FString& name) :
-	UvrSocketOps(CreateSocket(name)),
+UvrClient::UvrClient(const FString& name, SocketType socketType) :
+	m_socketType(socketType),
+	UvrSocketOps(CreateSocket(name, UvrConstants::net::SocketBufferSize, socketType)),
 	m_name(name)
 {
 }
@@ -31,22 +32,32 @@ bool UvrClient::Connect(const FString& addr, const int32 port, const int32 tries
 	internetAddr->SetIp(ipAddr.Value);
 	internetAddr->SetPort(port);
 
-	// Start connection loop
-	int32 tryIdx = 0;
-	while(GetSocket()->Connect(*internetAddr) == false)
+	bool retVal = false;
+	if (m_socketType == ST_TCP)
 	{
-		UE_LOG(LogUvrNetwork, Log, TEXT("%s couldn't connect to the server %s [%d]"), *m_name, *(internetAddr->ToString(true)), tryIdx++);
-		if (triesAmount > 0 && tryIdx >= triesAmount)
+		// Start connection loop
+		int32 tryIdx = 0;
+		while (GetSocket()->Connect(*internetAddr) == false)
 		{
-			UE_LOG(LogUvrNetwork, Error, TEXT("%s connection attempts limit reached"), *m_name);
-			break;
+			UE_LOG(LogUvrNetwork, Log, TEXT("%s couldn't connect to the server %s [%d]"), *m_name, *(internetAddr->ToString(true)), tryIdx++);
+			if (triesAmount > 0 && tryIdx >= triesAmount)
+			{
+				UE_LOG(LogUvrNetwork, Error, TEXT("%s connection attempts limit reached"), *m_name);
+				break;
+			}
+
+			// Sleep some time before next try
+			FPlatformProcess::Sleep(delay);
 		}
-
-		// Sleep some time before next try
-		FPlatformProcess::Sleep(delay);
+		retVal = IsOpen();
 	}
-
-	return IsOpen();
+	else if (m_socketType == ST_UDP)
+	{
+		m_udpAddr = internetAddr;
+		retVal = true;
+	}
+	
+	return retVal;
 }
 
 void UvrClient::Disconnect()
@@ -55,13 +66,29 @@ void UvrClient::Disconnect()
 
 	UE_LOG(LogUvrNetwork, Log, TEXT("%s disconnecting..."), *m_name);
 
-	if (IsOpen())
+	if (m_socketType == ST_TCP)
+	{
+		if (IsOpen())
+			GetSocket()->Close();
+	}
+	else if (m_socketType == ST_UDP)
+	{
 		GetSocket()->Close();
+	}
+	
 }
 
-FSocket* UvrClient::CreateSocket(const FString& name, const int32 bufSize)
+FSocket* UvrClient::CreateSocket(const FString& name, const int32 bufSize, SocketType socketType)
 {
-	FSocket* pSock = FTcpSocketBuilder(*name).AsBlocking().WithReceiveBufferSize(bufSize).WithSendBufferSize(bufSize);
+	FSocket* pSock = nullptr;
+	if (socketType == ST_TCP)
+	{
+		pSock = FTcpSocketBuilder(*name).AsBlocking().WithReceiveBufferSize(bufSize).WithSendBufferSize(bufSize);
+	}
+	else if (socketType == ST_UDP)
+	{
+		pSock = FUdpSocketBuilder(*name).AsReusable().WithReceiveBufferSize(bufSize).WithSendBufferSize(bufSize);
+	}	
 	check(pSock);
 	return pSock;
 }
@@ -71,6 +98,15 @@ bool UvrClient::SendMsg(const UvrMessage::Ptr& msg)
 	const bool result = UvrSocketOps::SendMsg(msg);
 	if (result == false)
 		UvrAppExit::ExitApplication(UvrAppExit::ExitType::NormalSoft, FString("Something wrong with connection (send). The cluster is inconsistent. Exit required."));
+
+	return result;
+}
+
+bool UvrClient::SendStringUDP(const FString& str)
+{
+	const bool result = UvrSocketOps::SendStringUDP(str, m_udpAddr);
+	/*if (result == false)
+		UvrAppExit::ExitApplication(UvrAppExit::ExitType::NormalSoft, FString("Something wrong with connection (send str udp). The cluster is inconsistent. Exit required."));*/
 
 	return result;
 }

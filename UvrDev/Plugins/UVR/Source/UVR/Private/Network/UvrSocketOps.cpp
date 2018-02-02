@@ -128,12 +128,17 @@ bool UvrSocketOps::RecvString(FString& result)
 	int32 bytesRead;
 	do 
 	{
+		bytesRead = 0;
 		memset(m_strBuffer, 0, m_bufferSize);
-		if (m_pSocket->Recv(m_strBuffer, strSize, bytesRead))
+		if (!m_pSocket->Recv(m_strBuffer, strSize, bytesRead))
 		{
-			char* carr = (char*)m_strBuffer;
-			result += ANSI_TO_TCHAR(carr);
+			UE_LOG(LogUvrNetwork, Warning, TEXT("%s recv failed - socket error."), *GetName());
+			return false;
 		}
+
+		char* carr = (char*)m_strBuffer;
+		result += ANSI_TO_TCHAR(carr);
+
 		// do while buffer can't hold incoming data
 	} while (bytesRead == strSize);
 	return true;
@@ -220,48 +225,29 @@ bool UvrSocketOps::SendMsg(const UvrMessage::Ptr& msg)
 	return true;
 }
 
-bool UvrSocketOps::SendStringMsg(const UvrMessage::Ptr& msg)
+bool UvrSocketOps::SendStringUDP(const FString& str, TSharedPtr<FInternetAddr> internetAddr)
 {
-	FScopeLock lock(&GetSyncObj());
-
-	UE_LOG(LogUvrNetwork, Verbose, TEXT("%s - sending message: %s"), *GetName(), *msg->ToString());
-
-	if (!IsOpen())
-	{
-		UE_LOG(LogUvrNetwork, Error, TEXT("%s not connected"), *GetName());
-		return false;
-	}	
-
-	FString str;
-	msg->GetArg("str", str);
+	FScopeLock lock(&GetSyncObj());	
+	
 	if (str.Len() > 0)
 	{
 		int byteSent;
 		char* ansiArr = TCHAR_TO_ANSI(*str);
-		size_t len = strlen(ansiArr) + 1; // null terminated str
-		uint8* data = (uint8*)ansiArr;
-		size_t offset = 0;
-
-		do
+		size_t len = strlen(ansiArr); // +1; // null terminated str
+		uint8* data = (uint8*)ansiArr;		
+		
+		if (!m_pSocket->SendTo(data, len, byteSent, *internetAddr.Get()))
 		{
-			int dataSize = len <= m_sendPacketSize ? len : m_sendPacketSize;
-			if (!m_pSocket->Send(data + offset, dataSize, byteSent))
-			{
-				UE_LOG(LogUvrNetwork, Error, TEXT("%s - couldn't send a message (length=%d)"), *GetName(), len);
-				return false;
-			}
+			UE_LOG(LogUvrNetwork, Error, TEXT("%s - couldn't send a message (length=%d)"), *GetName(), len);
+			return false;
+		}
 
-			// Check amount of sent bytes
-			if (byteSent <= 0 || dataSize > byteSent)
-			{
-				UE_LOG(LogUvrNetwork, Error, TEXT("%s - sent wrong amount of bytes: %d of %d left"), *GetName(), byteSent, dataSize);
-				return false;
-			}
-
-			len -= byteSent;
-			offset += byteSent;
-
-		} while (len > 0);
+		// Check amount of sent bytes
+		if (byteSent <= 0 || len != byteSent)
+		{
+			UE_LOG(LogUvrNetwork, Error, TEXT("%s - sent wrong amount of bytes: %d of %d left"), *GetName(), byteSent, len);
+			return false;
+		}
 	}
 
 	return true;

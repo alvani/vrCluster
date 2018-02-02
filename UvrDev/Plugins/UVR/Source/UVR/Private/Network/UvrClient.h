@@ -9,7 +9,13 @@
 class UvrClient : protected UvrSocketOps
 {
 public:
-	UvrClient(const FString& name);
+	enum SocketType {
+		ST_TCP,
+		ST_UDP
+	};
+
+public:
+	UvrClient(const FString& name, SocketType socketType = ST_TCP);
 	virtual ~UvrClient();
 
 public:
@@ -19,6 +25,7 @@ public:
 	void Disconnect();
 
 	virtual bool SendMsg(const UvrMessage::Ptr& msg) override final;
+	bool SendStringUDP(const FString& str);
 	virtual UvrMessage::Ptr RecvMsg() override final;
 
 	UvrMessage::Ptr SendRecvMsg(const UvrMessage::Ptr& msg);
@@ -31,10 +38,12 @@ public:
 
 protected:
 	// Creates client socket
-	FSocket* CreateSocket(const FString& name, const int32 bufSize = UvrConstants::net::SocketBufferSize);
+	FSocket* CreateSocket(const FString& name, const int32 bufSize, SocketType socketType);
 
 private:
 	// Client name
 	const FString m_name;
+	SocketType m_socketType;
+	TSharedPtr<FInternetAddr> m_udpAddr;
 };
 

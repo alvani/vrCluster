@@ -13,7 +13,7 @@ public:
 
 public:
 	virtual bool SendMsg(const UvrMessage::Ptr& msg);	
-	virtual bool SendStringMsg(const UvrMessage::Ptr& msg);
+	bool SendStringUDP(const FString& str, TSharedPtr<FInternetAddr> internetAddr);
 	virtual UvrMessage::Ptr RecvMsg();
 	virtual UvrMessage::Ptr RecvHostMsg();
 
@@ -45,8 +45,7 @@ private:
 
 	};
 
-private:
-	static const uint32 m_sendPacketSize = 1024;
+private:	
 	static const uint32 m_bufferSize = 0xFFFF;	
 	static uint8 m_strBuffer[];
 	// Socket
