@@ -2,8 +2,6 @@
 #include "UvrPrivatePCH.h"
 #include "UvrSocketOps.h"
 
-uint8 UvrSocketOps::m_strBuffer[UvrSocketOps::m_bufferSize];
-
 UvrSocketOps::UvrSocketOps(FSocket* pSock) :
 	m_pSocket(pSock)
 {
@@ -67,12 +65,31 @@ UvrMessage::Ptr UvrSocketOps::RecvHostMsg()
 		UE_LOG(LogUvrNetwork, Error, TEXT("%s - not connected"), *GetName());
 		return nullptr;
 	}
+	
+	RecvHostData();
+	if (m_poolBuffer.Num() > 0)
+	{
+		uint16* lenPtr = (uint16 *)m_poolBuffer.GetData();
+		uint16 len = *lenPtr;
+		if ((int32)(len + 2) <= m_poolBuffer.Num())
+		{
+			m_strBuffer.SetNumUninitialized(len + 1);
+			FMemory::Memcpy(m_strBuffer.GetData(), m_poolBuffer.GetData() + 2, len);
+			m_strBuffer[len] = 0;
+			char* carr = (char*)m_strBuffer.GetData();
+			FString result = ANSI_TO_TCHAR(carr);
 
-	FString str;
-	RecvString(str);
+			m_poolBuffer.RemoveAt(0, len + 2, true);
 
+			UvrMessage::Ptr msg(new UvrMessage("host", "", ""));
+			msg->SetArg("str", result);
+			return msg;
+		}
+	}	
+	
+	FString result = "";
 	UvrMessage::Ptr msg(new UvrMessage("host", "", ""));
-	msg->SetArg("str", str);
+	msg->SetArg("str", result);
 	return msg;
 }
 
@@ -120,27 +137,31 @@ bool UvrSocketOps::RecvChunk(int32 chunkSize, TArray<uint8>& chunkBuffer, const 
 	return true;
 }
 
-bool UvrSocketOps::RecvString(FString& result)
+bool UvrSocketOps::RecvHostData()
 {	
-	uint32 strSize = m_bufferSize - 1;	
-
-	result = "";
-	int32 bytesRead;
-	do 
+	if (m_recvBuffer.Num() == 0)
+	{		
+		m_recvBuffer.SetNumUninitialized(0xFFFF);
+	}	
+	
+	int32 bytesRead;	
+	do
 	{
 		bytesRead = 0;
-		memset(m_strBuffer, 0, m_bufferSize);
-		if (!m_pSocket->Recv(m_strBuffer, strSize, bytesRead))
+		if (!m_pSocket->Recv(m_recvBuffer.GetData(), m_recvBuffer.Num(), bytesRead))
 		{
 			UE_LOG(LogUvrNetwork, Warning, TEXT("%s recv failed - socket error."), *GetName());
 			return false;
 		}
 
-		char* carr = (char*)m_strBuffer;
-		result += ANSI_TO_TCHAR(carr);
+		int32 curSize = m_poolBuffer.Num();						
+		m_poolBuffer.SetNumUninitialized(curSize + bytesRead);
+		
+		FMemory::Memcpy(m_poolBuffer.GetData() + curSize, m_recvBuffer.GetData(), bytesRead);		
 
 		// do while buffer can't hold incoming data
-	} while (bytesRead == strSize);
+	} while (bytesRead == m_recvBuffer.Num());	
+
 	return true;
 }
 
@@ -229,7 +250,7 @@ bool UvrSocketOps::SendString(const FString& str)
 {
 	FScopeLock lock(&GetSyncObj());
 	if (str.Len() > 0)
-	{		
+	{			
 		char* ansiArr = TCHAR_TO_ANSI(*str);
 		uint16 len = strlen(ansiArr); // +1; // null terminated str
 		int32 msgLength = len + 2;
@@ -237,7 +258,7 @@ bool UvrSocketOps::SendString(const FString& str)
 
 		if (m_sendBuffer.Num() == 0)
 		{
-			int32 bufferSize = m_bufferSize;
+			int32 bufferSize = 0xFFFF;
 			while (bufferSize < msgLength)
 			{
 				bufferSize *= 2;
@@ -247,8 +268,8 @@ bool UvrSocketOps::SendString(const FString& str)
 		else
 		{
 			if (m_sendBuffer.Num() < msgLength)
-			{		
-				int32 bufferSize = m_bufferSize;
+			{						
+				int32 bufferSize = m_sendBuffer.Num();
 				while (bufferSize < msgLength)
 				{
 					bufferSize *= 2;

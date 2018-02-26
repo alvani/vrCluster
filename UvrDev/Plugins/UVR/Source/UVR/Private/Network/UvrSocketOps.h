@@ -34,7 +34,7 @@ protected:
 
 private:
 	bool RecvChunk(int32 chunkSize, TArray<uint8>& chunkBuffer, const FString& chunkName = FString("DataChunk"));
-	bool RecvString(FString& result);
+	bool RecvHostData();
 
 private:
 	struct UvrMessageHeader
@@ -46,10 +46,11 @@ private:
 
 	};
 
-private:	
-	static const uint32 m_bufferSize = 0xFFFF;	
-	static uint8 m_strBuffer[];
-	TArray<uint8> m_sendBuffer;	
+private:		
+	TArray<uint8> m_recvBuffer;
+	TArray<uint8> m_poolBuffer;	
+	TArray<uint8> m_sendBuffer;
+	TArray<uint8> m_strBuffer;
 	// Socket
 	FSocket* m_pSocket = nullptr;
 	// Data buffer for incoming and outgoing messages
