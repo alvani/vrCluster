@@ -12,7 +12,8 @@ public:
 	virtual ~UvrSocketOps();
 
 public:
-	virtual bool SendMsg(const UvrMessage::Ptr& msg);	
+	virtual bool SendMsg(const UvrMessage::Ptr& msg);
+	bool SendString(const FString& str);
 	bool SendStringUDP(const FString& str, TSharedPtr<FInternetAddr> internetAddr);
 	virtual UvrMessage::Ptr RecvMsg();
 	virtual UvrMessage::Ptr RecvHostMsg();
@@ -48,6 +49,7 @@ private:
 private:	
 	static const uint32 m_bufferSize = 0xFFFF;	
 	static uint8 m_strBuffer[];
+	TArray<uint8> m_sendBuffer;	
 	// Socket
 	FSocket* m_pSocket = nullptr;
 	// Data buffer for incoming and outgoing messages

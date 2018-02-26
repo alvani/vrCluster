@@ -7,7 +7,7 @@ uint8 UvrSocketOps::m_strBuffer[UvrSocketOps::m_bufferSize];
 UvrSocketOps::UvrSocketOps(FSocket* pSock) :
 	m_pSocket(pSock)
 {
-	m_buffer.Reserve(UvrConstants::net::MessageBufferSize);
+	m_buffer.Reserve(UvrConstants::net::MessageBufferSize);	
 }
 
 
@@ -222,6 +222,77 @@ bool UvrSocketOps::SendMsg(const UvrMessage::Ptr& msg)
 
 	UE_LOG(LogUvrNetwork, Verbose, TEXT("%s - message sent"), *GetName());
 
+	return true;
+}
+
+bool UvrSocketOps::SendString(const FString& str)
+{
+	FScopeLock lock(&GetSyncObj());
+	if (str.Len() > 0)
+	{		
+		char* ansiArr = TCHAR_TO_ANSI(*str);
+		uint16 len = strlen(ansiArr); // +1; // null terminated str
+		int32 msgLength = len + 2;
+		uint8* data = (uint8*)ansiArr;
+
+		if (m_sendBuffer.Num() == 0)
+		{
+			int32 bufferSize = m_bufferSize;
+			while (bufferSize < msgLength)
+			{
+				bufferSize *= 2;
+			}
+			m_sendBuffer.Reserve(bufferSize);
+		}
+		else
+		{
+			if (m_sendBuffer.Num() < msgLength)
+			{		
+				int32 bufferSize = m_bufferSize;
+				while (bufferSize < msgLength)
+				{
+					bufferSize *= 2;
+				}
+				m_sendBuffer.Reserve(bufferSize);
+			}
+		}
+
+		FMemory::Memcpy(m_sendBuffer.GetData(), &len, 2);
+		FMemory::Memcpy(m_sendBuffer.GetData() + 2, data, len);
+		
+		int32 bytesWriteAll = 0;
+		int32 bytesWriteNow = 0;
+		int32 bytesWriteLeft = 0;
+
+		while (bytesWriteAll < msgLength)
+		{
+			bytesWriteLeft = msgLength - bytesWriteAll;
+
+			// Send data
+			if (!m_pSocket->Send(m_sendBuffer.GetData() + bytesWriteAll, bytesWriteLeft, bytesWriteNow))
+			{
+				UE_LOG(LogUvrNetwork, Error, TEXT("SendString - couldn't send a message (length=%d)"), *GetName(), msgLength);
+				return false;
+			}
+
+			// Check amount of sent bytes
+			if (bytesWriteNow <= 0 || bytesWriteNow > bytesWriteLeft)
+			{
+				UE_LOG(LogUvrNetwork, Error, TEXT("%s - sent wrong amount of bytes: %d of %d left"), *GetName(), bytesWriteNow, bytesWriteLeft);
+				return false;
+			}
+
+			bytesWriteAll += bytesWriteNow;
+			UE_LOG(LogUvrNetwork, VeryVerbose, TEXT("%s - sent %d bytes, left %d bytes"), *GetName(), bytesWriteNow, msgLength - bytesWriteAll);
+
+			// Convergence check
+			if (bytesWriteAll > msgLength)
+			{
+				UE_LOG(LogUvrNetwork, Error, TEXT("%s - convergence failed: overall sent %d of %d"), *GetName(), bytesWriteAll, msgLength);
+				return false;
+			}
+		}
+	}
 	return true;
 }
 
