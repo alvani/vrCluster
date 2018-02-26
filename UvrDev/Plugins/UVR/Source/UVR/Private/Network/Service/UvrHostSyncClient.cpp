@@ -5,7 +5,7 @@
 #include "Network/UvrMessage.h"
 
 UvrHostSyncClient::UvrHostSyncClient() :
-	UvrClient(FString("CLN_HS"), UvrClient::ST_UDP)
+	UvrClient(FString("CLN_HS"))
 {	
 }
 
@@ -16,7 +16,8 @@ UvrHostSyncClient::UvrHostSyncClient(const FString& name) :
 
 void UvrHostSyncClient::SendDataToHost()
 {	
-	FString data = "empty";	
-	SendStringUDP(data);
+	FString data = "entity:ownship:segmentId";
+	SendString(data);
+	// SendStringUDP(data);
 }
 
