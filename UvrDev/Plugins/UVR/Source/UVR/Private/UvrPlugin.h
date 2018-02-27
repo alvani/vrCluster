@@ -64,9 +64,13 @@ private:
 	//virtual bool SupportsAutomaticShutdown() override; // default is true
 	//virtual bool IsGameModule() const override; default is false
 
+public:
+	FString m_requestString;
+	FString m_resultString;
+
 private:
 	// This instance (internal fast access)
 	static UvrPlugin* ms_instance;
 	// Current world
-	UWorld* m_pWorld = nullptr;
+	UWorld* m_pWorld = nullptr;	
 };

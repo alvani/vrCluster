@@ -15,9 +15,12 @@ UvrHostSyncClient::UvrHostSyncClient(const FString& name) :
 }
 
 void UvrHostSyncClient::SendDataToHost()
-{	
-	FString data = "entity:ownship:segmentId";
-	SendString(data);
-	// SendStringUDP(data);
+{		
+	FString str = UvrPlugin::get().m_requestString;
+	if (str.Len() == 0)
+	{
+		str = "empty";
+	}
+	SendString(str);	
 }
 

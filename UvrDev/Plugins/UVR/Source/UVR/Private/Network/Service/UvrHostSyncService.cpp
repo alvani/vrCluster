@@ -67,7 +67,8 @@ bool UvrHostSyncService::IsConnectionAllowed(FSocket* pSock, const FIPv4Endpoint
 
 void UvrHostSyncService::ProcessData(HostData hd)
 {	
-	UE_LOG(LogUvrNetworkMsg, Warning, TEXT("%s - A dispatcher for this message hasn't been implemented yet <%s>"), *GetName(), *hd.str);
+	// UE_LOG(LogUvrNetworkMsg, Warning, TEXT("%s - A dispatcher for this message hasn't been implemented yet <%s>"), *GetName(), *hd.str);
+	UvrPlugin::get().m_resultString = hd.str;
 }
 
 void UvrHostSyncService::WaitForHost()
