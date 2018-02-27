@@ -66,7 +66,11 @@ UvrMessage::Ptr UvrSocketOps::RecvHostMsg()
 		return nullptr;
 	}
 	
-	RecvHostData();
+	if (!RecvHostData())
+	{
+		return nullptr;
+	}
+
 	if (m_poolBuffer.Num() > 0)
 	{
 		uint16* lenPtr = (uint16 *)m_poolBuffer.GetData();
