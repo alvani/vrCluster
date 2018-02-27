@@ -66,7 +66,7 @@ private:
 
 public:
 	FString m_requestString;
-	FString m_resultString;
+	FString m_replyString;
 
 private:
 	// This instance (internal fast access)
