@@ -38,6 +38,9 @@ public:
 	virtual IUvrInputManager*   const GetInputMgr()   override { return InputMgr.IsValid()   ? InputMgr.Get()   : nullptr; }
 	virtual IUvrConfigManager*  const GetConfigMgr()  override { return ConfigMgr.IsValid()  ? ConfigMgr.Get()  : nullptr; }
 	virtual IUvrGameManager*    const GetGameMgr()    override { return GameMgr.IsValid()    ? GameMgr.Get()    : nullptr; }
+	virtual bool				IsMaster()		      override { return ClusterMgr.IsValid() ? ClusterMgr.Get()->IsMaster() : false; }
+	virtual void				SetRequestString(FString& str) override { m_requestString = str; }
+	virtual FString				GetReplyString()	  override { return m_replyString; }
 
 public:
 	//////////////////////////////////////////////////////////////////////////////////////////////

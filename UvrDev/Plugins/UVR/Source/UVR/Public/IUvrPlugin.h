@@ -69,6 +69,12 @@ struct IUvrPlugin : public IModuleInterface
 	*/
 	virtual IUvrGameManager* const GetGameMgr() = 0;
 
+	virtual bool IsMaster() = 0;
+
+	virtual void SetRequestString(FString& str) = 0;
+
+	virtual FString GetReplyString() = 0;
+
 private:
 	static constexpr auto ModuleName = "UVR";
 };
