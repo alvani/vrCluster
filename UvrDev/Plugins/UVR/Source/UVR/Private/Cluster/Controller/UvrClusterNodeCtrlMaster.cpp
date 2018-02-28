@@ -190,12 +190,19 @@ void UvrClusterNodeCtrlMaster::StopClients()
 }
 
 void UvrClusterNodeCtrlMaster::WaitForFrameStart()
-{	
+{			
+	UvrClusterNodeCtrlSlave::WaitForFrameStart();	
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// IPUvrHostSyncProtocol
+//////////////////////////////////////////////////////////////////////////////////////////////
+void UvrClusterNodeCtrlMaster::SyncToHost()
+{
 	if (m_syncHost)
 	{
 		m_clnHS->SendDataToHost();
 		m_srvHS->WaitForHost();
-	}	
-	UvrClusterNodeCtrlSlave::WaitForFrameStart();	
+	}
 }
 

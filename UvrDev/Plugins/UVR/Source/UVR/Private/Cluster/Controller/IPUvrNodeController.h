@@ -3,11 +3,13 @@
 
 #include "Network/Protocol/IPUvrClusterSyncProtocol.h"
 #include "Network/Protocol/IPUvrSwapSyncProtocol.h"
+#include "Network/Protocol/IPUvrHostSyncProtocol.h"
 
 
 struct IPUvrNodeController :
 	public IPUvrClusterSyncProtocol,
-	public IPUvrSwapSyncProtocol
+	public IPUvrSwapSyncProtocol,
+	public IPUvrHostSyncProtocol
 {
 	virtual ~IPUvrNodeController()
 	{ }

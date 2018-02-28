@@ -26,6 +26,6 @@ public:
 	virtual void GetSyncData(UvrMessage::DataType& data) = 0;
 
 	// Sync input
-	virtual void GetInputData(UvrMessage::DataType& data) = 0;
+	virtual void GetInputData(UvrMessage::DataType& data) = 0;	
 };
 

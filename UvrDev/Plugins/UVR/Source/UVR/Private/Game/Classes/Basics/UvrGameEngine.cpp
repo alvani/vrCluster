@@ -122,7 +122,9 @@ void UUvrGameEngine::Tick(float DeltaSeconds, bool bIdleMode)
 		// Update delta time. Cluster slaves will get this value from the master few steps later
 		clusterMgr->SetDeltaTime(DeltaSeconds);
 
-		// Sync cluster objects
+		clusterMgr->SyncToHost();
+
+		// Sync cluster objects		
 		clusterMgr->SyncObjects();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////

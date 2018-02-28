@@ -188,6 +188,8 @@ void UvrClusterManager::ExportSyncData(TMap<FString, FString>& data) const
 		{
 			for (auto obj : m_objects)
 				m_objectsCache.Add(obj->GetSyncId(), obj->SerializeToString());
+
+			m_objectsCache.Add("ReplyString", UvrPlugin::get().m_replyString);
 		}
 	}
 
@@ -213,6 +215,12 @@ void UvrClusterManager::ImportSyncData(const TMap<FString, FString>& data)
 			UE_LOG(LogUvrCluster, Verbose, TEXT("Found %s in sync data. Applying..."), *syncId);
 			if (!obj->DeserializeFromString(data[syncId]))
 				UE_LOG(LogUvrCluster, Error, TEXT("Couldn't apply sync data for sync object %s"), *syncId);
+		}
+
+		const FString* reply = data.Find("ReplyString");
+		if (reply)
+		{
+			UvrPlugin::get().m_replyString = *reply;
 		}
 	}
 }
@@ -250,6 +258,11 @@ void UvrClusterManager::SyncInput()
 		// Perform data load (objects state update)
 		UvrPlugin::get().InputMgr->ImportInputData(data);
 	}
+}
+
+void UvrClusterManager::SyncToHost()
+{
+	m_controller->SyncToHost();
 }
 
 

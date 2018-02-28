@@ -30,4 +30,5 @@ struct IPUvrClusterManager :
 
 	virtual void SyncObjects() = 0;
 	virtual void SyncInput()   = 0;
+	virtual void SyncToHost()  = 0;
 };
