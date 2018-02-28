@@ -40,6 +40,7 @@ protected:
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	virtual void NotifySessionOpen(UvrSession* pSession) override;
 	virtual void NotifySessionClose(UvrSession* pSession) override;
+	virtual void NotifyHostSessionClose(UvrSession* pSession) override final;
 	virtual UvrMessage::Ptr ProcessMessage(UvrMessage::Ptr msg) = 0;
 
 protected:
@@ -68,5 +69,7 @@ private:
 	TArray<TUniquePtr<UvrSession>> m_sessions;
 protected:
 	bool m_hostMode = false;
+
+	TArray<UvrSession*> m_inactiveSessions;
 };
 

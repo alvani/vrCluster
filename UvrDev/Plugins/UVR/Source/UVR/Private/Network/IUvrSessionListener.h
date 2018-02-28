@@ -17,6 +17,9 @@ struct IUvrSessionListener
 	virtual void NotifySessionClose(UvrSession* pSession)
 	{ }
 
+	virtual void NotifyHostSessionClose(UvrSession* pSession)
+	{ }
+
 	// Pass a message to a concrete implementation
 	virtual UvrMessage::Ptr ProcessMessage(UvrMessage::Ptr msg) = 0;
 

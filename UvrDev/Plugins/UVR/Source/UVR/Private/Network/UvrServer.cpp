@@ -69,6 +69,27 @@ bool UvrServer::ConnectionHandler(FSocket* pSock, const FIPv4Endpoint& ep)
 	FScopeLock lock(&m_cs);
 	check(pSock);
 
+	for (auto inSession : m_inactiveSessions)
+	{
+		int32 idx = -1;
+		int32 count = 0;
+		for (auto& session : m_sessions)
+		{
+			if (session.Get() == inSession)
+			{
+				idx = count;
+				break;
+			}
+			++count;
+		}
+
+		if (idx >= 0)
+		{			
+			m_sessions.RemoveAt(idx);
+		}		
+	}
+	m_inactiveSessions.Empty();
+
 	if (IsRunning() && IsConnectionAllowed(pSock, ep))
 	{
 		pSock->SetLinger(false, 0);
@@ -100,6 +121,12 @@ void UvrServer::NotifySessionClose(UvrSession* pSession)
 	//{
 	//	return item.Get() != pSession;
 	//});
+}
+
+void UvrServer::NotifyHostSessionClose(UvrSession* pSession)
+{
+	FScopeLock lock(&m_cs);
+	m_inactiveSessions.Add(pSession);
 }
 
 

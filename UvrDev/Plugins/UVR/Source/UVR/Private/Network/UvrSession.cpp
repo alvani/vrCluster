@@ -57,6 +57,9 @@ uint32 UvrSession::Run()
 					}
 				}
 			}
+
+			GetSocket()->Close();
+			m_pListener->NotifySessionClose(this);
 		}
 		else
 		{
@@ -66,10 +69,9 @@ uint32 UvrSession::Run()
 				auto resp = m_pListener->ProcessMessage(req);
 				continue;
 			}
-		}
-
-		GetSocket()->Close();
-		m_pListener->NotifySessionClose(this);
+			GetSocket()->Close();
+			m_pListener->NotifyHostSessionClose(this);
+		}		
 	}
 
 	UE_LOG(LogUvrNetwork, Log, TEXT("Session thread %s finished"), *m_name);
