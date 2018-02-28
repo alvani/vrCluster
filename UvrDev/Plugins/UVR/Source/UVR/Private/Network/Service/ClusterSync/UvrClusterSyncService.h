@@ -19,6 +19,8 @@ public:
 	virtual bool Start() override;
 	void Shutdown() override;
 
+	void EndWaitSyncData();
+
 protected:
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	// IUvrSessionListener
@@ -48,5 +50,8 @@ private:
 	UvrBarrier m_barrierFrameEnd;
 	// Tick end barrier
 	UvrBarrier m_barrierTickEnd;
+
+	std::mutex m_waitMutex;	
+	std::condition_variable m_cv;
 };
 

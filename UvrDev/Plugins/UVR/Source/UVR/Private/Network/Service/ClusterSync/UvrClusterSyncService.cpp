@@ -42,6 +42,11 @@ void UvrClusterSyncService::Shutdown()
 	return UvrServer::Shutdown();
 }
 
+void UvrClusterSyncService::EndWaitSyncData()
+{
+	m_cv.notify_all();
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 // IUvrSessionListener
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,6 +118,9 @@ UvrMessage::Ptr UvrClusterSyncService::ProcessMessage(UvrMessage::Ptr msg)
 	}
 	else if (msgName == UvrClusterSyncMsg::GetSyncData::name)
 	{
+		std::unique_lock<std::mutex> waitLock{ m_waitMutex };
+		m_cv.wait_for(waitLock, std::chrono::milliseconds(999999));
+
 		UvrMessage::DataType data;
 		GetSyncData(data);
 
