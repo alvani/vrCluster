@@ -67,6 +67,8 @@ bool UvrClusterNodeCtrlMaster::InitializeServers()
 	{
 		m_srvHS.Reset(new UvrHostSyncService(masterCfg.Addr, masterCfg.Port_HS));
 		hsValid = m_srvHS.IsValid();
+
+		m_srvCS->UseWaitSyncData();
 	}
 
 	return m_srvCS.IsValid() && m_srvSS.IsValid() && hsValid;

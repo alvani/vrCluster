@@ -18,6 +18,10 @@ UvrClusterSyncService::UvrClusterSyncService(const FString& addr, const int32 po
 
 UvrClusterSyncService::~UvrClusterSyncService()
 {
+	if (m_useWaitSync)
+	{
+		m_cv.notify_all();
+	}
 	Shutdown();
 }
 
@@ -40,6 +44,11 @@ void UvrClusterSyncService::Shutdown()
 	m_barrierTickEnd.Deactivate();
 
 	return UvrServer::Shutdown();
+}
+
+void UvrClusterSyncService::UseWaitSyncData()
+{
+	m_useWaitSync = true;
 }
 
 void UvrClusterSyncService::EndWaitSyncData()
@@ -118,8 +127,11 @@ UvrMessage::Ptr UvrClusterSyncService::ProcessMessage(UvrMessage::Ptr msg)
 	}
 	else if (msgName == UvrClusterSyncMsg::GetSyncData::name)
 	{
-		std::unique_lock<std::mutex> waitLock{ m_waitMutex };
-		m_cv.wait_for(waitLock, std::chrono::milliseconds(999999));
+		if (m_useWaitSync)
+		{
+			std::unique_lock<std::mutex> waitLock{ m_waitMutex };
+			m_cv.wait_for(waitLock, std::chrono::milliseconds(999999));
+		}		
 
 		UvrMessage::DataType data;
 		GetSyncData(data);

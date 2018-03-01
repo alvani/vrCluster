@@ -19,6 +19,7 @@ public:
 	virtual bool Start() override;
 	void Shutdown() override;
 
+	void UseWaitSyncData();
 	void EndWaitSyncData();
 
 protected:
@@ -53,5 +54,6 @@ private:
 
 	std::mutex m_waitMutex;	
 	std::condition_variable m_cv;
+	bool m_useWaitSync = false;
 };
 
