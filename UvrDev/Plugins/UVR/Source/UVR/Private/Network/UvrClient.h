@@ -23,6 +23,7 @@ public:
 	bool Connect(const FString& addr, const int32 port, const int32 triesAmount = UvrConstants::net::ClientConnectTriesAmount, const float delay = UvrConstants::net::ClientConnectRetryDelay);
 	// Terminates current connection
 	void Disconnect();
+	void Reconnect();
 
 	virtual bool SendMsg(const UvrMessage::Ptr& msg) override final;
 	bool SendStringUDP(const FString& str);
@@ -45,5 +46,8 @@ private:
 	const FString m_name;
 	SocketType m_socketType;
 	TSharedPtr<FInternetAddr> m_udpAddr;
+
+	FString m_addr;
+	int32 m_port;
 };
 

@@ -15,12 +15,19 @@ UvrHostSyncClient::UvrHostSyncClient(const FString& name) :
 }
 
 void UvrHostSyncClient::SendDataToHost()
-{		
-	FString str = UvrPlugin::get().m_requestString;
-	if (str.Len() == 0)
+{	
+	if (IsConnected())
 	{
-		str = "empty";
-	}
-	SendString(str);	
+		FString str = UvrPlugin::get().m_requestString;
+		if (str.Len() == 0)
+		{
+			str = "empty";
+		}
+		bool res = SendString(str);
+		if (!res)
+		{
+			Reconnect();
+		}
+	}	
 }
 

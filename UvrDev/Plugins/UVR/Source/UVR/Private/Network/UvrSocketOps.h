@@ -51,6 +51,7 @@ private:
 	TArray<uint8> m_poolBuffer;	
 	TArray<uint8> m_sendBuffer;
 	TArray<uint8> m_strBuffer;
+protected:
 	// Socket
 	FSocket* m_pSocket = nullptr;
 	// Data buffer for incoming and outgoing messages

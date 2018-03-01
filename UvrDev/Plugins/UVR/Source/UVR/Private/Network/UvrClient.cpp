@@ -19,6 +19,9 @@ bool UvrClient::Connect(const FString& addr, const int32 port, const int32 tries
 {
 	FScopeLock lock(&GetSyncObj());
 
+	m_addr = addr;
+	m_port = port;
+
 	// Generate IPv4 address
 	FIPv4Address ipAddr;
 	if (!FIPv4Address::Parse(addr, ipAddr))
@@ -76,6 +79,14 @@ void UvrClient::Disconnect()
 		GetSocket()->Close();
 	}
 	
+}
+
+void UvrClient::Reconnect()
+{
+	Disconnect();
+	ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(m_pSocket);
+	m_pSocket = CreateSocket(m_name, UvrConstants::net::SocketBufferSize, m_socketType);
+	Connect(m_addr, m_port, 1000);
 }
 
 FSocket* UvrClient::CreateSocket(const FString& name, const int32 bufSize, SocketType socketType)
