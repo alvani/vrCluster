@@ -12,16 +12,13 @@ UvrClusterSyncService::UvrClusterSyncService(const FString& addr, const int32 po
 	m_barrierGameStart  (UvrPlugin::get().ClusterMgr->GetNodesAmount(), FString("GameStart_barrier"),  UvrConstants::net::BarrierGameStartWaitTimeout),
 	m_barrierFrameStart (UvrPlugin::get().ClusterMgr->GetNodesAmount(), FString("FrameStart_barrier"), UvrConstants::net::BarrierWaitTimeout),
 	m_barrierFrameEnd   (UvrPlugin::get().ClusterMgr->GetNodesAmount(), FString("FrameEnd_barrier"),   UvrConstants::net::BarrierWaitTimeout),
-	m_barrierTickEnd    (UvrPlugin::get().ClusterMgr->GetNodesAmount(), FString("TickEnd_barrier"),    UvrConstants::net::BarrierWaitTimeout)
+	m_barrierTickEnd    (UvrPlugin::get().ClusterMgr->GetNodesAmount(), FString("TickEnd_barrier"),    UvrConstants::net::BarrierWaitTimeout),
+	m_barrierSyncData	(UvrPlugin::get().ClusterMgr->GetNodesAmount(), FString("SyncData_barrier"),   UvrConstants::net::BarrierWaitTimeout)
 {
 }
 
 UvrClusterSyncService::~UvrClusterSyncService()
 {
-	if (m_useWaitSync)
-	{
-		m_cv.notify_all();
-	}
 	Shutdown();
 }
 
@@ -32,6 +29,7 @@ bool UvrClusterSyncService::Start()
 	m_barrierFrameStart.Activate();
 	m_barrierFrameEnd.Activate();
 	m_barrierTickEnd.Activate();
+	m_barrierSyncData.Activate();
 
 	return UvrServer::Start();
 }
@@ -42,6 +40,7 @@ void UvrClusterSyncService::Shutdown()
 	m_barrierFrameStart.Deactivate();
 	m_barrierFrameEnd.Deactivate();
 	m_barrierTickEnd.Deactivate();
+	m_barrierSyncData.Deactivate();
 
 	return UvrServer::Shutdown();
 }
@@ -49,11 +48,6 @@ void UvrClusterSyncService::Shutdown()
 void UvrClusterSyncService::UseWaitSyncData()
 {
 	m_useWaitSync = true;
-}
-
-void UvrClusterSyncService::EndWaitSyncData()
-{
-	m_cv.notify_all();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -128,9 +122,8 @@ UvrMessage::Ptr UvrClusterSyncService::ProcessMessage(UvrMessage::Ptr msg)
 	else if (msgName == UvrClusterSyncMsg::GetSyncData::name)
 	{
 		if (m_useWaitSync)
-		{
-			std::unique_lock<std::mutex> waitLock{ m_waitMutex };
-			m_cv.wait_for(waitLock, std::chrono::milliseconds(999999));
+		{			
+			WaitForSyncData();
 		}		
 
 		UvrMessage::DataType data;
@@ -194,4 +187,10 @@ void UvrClusterSyncService::GetSyncData(UvrMessage::DataType& data)
 void UvrClusterSyncService::GetInputData(UvrMessage::DataType& data)
 {
 	UvrPlugin::get().InputMgr->ExportInputData(data);
+}
+
+void UvrClusterSyncService::WaitForSyncData()
+{
+	if (m_barrierSyncData.Wait() != UvrBarrier::WaitResult::Ok)
+		UvrAppExit::ExitApplication(UvrAppExit::ExitType::NormalSoft, FString("Error on sync data barrier. Exit required."));
 }

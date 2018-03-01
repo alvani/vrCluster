@@ -19,8 +19,7 @@ public:
 	virtual bool Start() override;
 	void Shutdown() override;
 
-	void UseWaitSyncData();
-	void EndWaitSyncData();
+	void UseWaitSyncData();	
 
 protected:
 	//////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +41,9 @@ private:
 	virtual void GetSyncData(UvrMessage::DataType& data)  override;
 	virtual void GetInputData(UvrMessage::DataType& data) override;
 
+public:
+	virtual void WaitForSyncData();
+
 private:
 	// Game start sync barrier
 	UvrBarrier m_barrierGameStart;
@@ -52,8 +54,7 @@ private:
 	// Tick end barrier
 	UvrBarrier m_barrierTickEnd;
 
-	std::mutex m_waitMutex;	
-	std::condition_variable m_cv;
+	UvrBarrier m_barrierSyncData;	
 	bool m_useWaitSync = false;
 };
 

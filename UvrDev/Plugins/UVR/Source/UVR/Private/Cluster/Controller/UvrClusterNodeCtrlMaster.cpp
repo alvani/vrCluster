@@ -205,7 +205,7 @@ void UvrClusterNodeCtrlMaster::SyncToHost()
 	{
 		m_clnHS->SendDataToHost();		
 		m_srvHS->WaitForHost();
-		m_srvCS->EndWaitSyncData();
+		m_srvCS->WaitForSyncData();
 	}
 }
 
